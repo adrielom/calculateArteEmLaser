@@ -1,15 +1,19 @@
-import React, { useState } from 'react'
-import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native'
-import { Entypo, AntDesign } from '@expo/vector-icons';
-import { primaryColor, secondaryColor, greyColor } from '../utils/Colors'
+import React, { useState, useEffect, useContext } from 'react'
+import { StyleSheet, Text, View, TextInput } from 'react-native'
+import { greyColor } from '../utils/Colors'
+import RoundButton from './RoundButton';
 
 export interface IDimensionIput {
-    title?: string
+    title?: string,
+    val: any
 }
 
-export default function DimensionsInput({ title }: IDimensionIput) {
+const TOP_THRESHOLD = 1000
+const BOTTOM_THRESHOLD = 0
 
-    const [value, setValue] = useState(20)
+export default function DimensionsInput({ title, val }: IDimensionIput) {
+
+    const [value, setValue] = val
 
     function ChangeInputValue(val: string) {
         let numVal = parseFloat(val)
@@ -20,10 +24,12 @@ export default function DimensionsInput({ title }: IDimensionIput) {
     }
 
     function AddValue() {
-        setValue(value + 1);
+        if (value + 1 <= TOP_THRESHOLD)
+            setValue(value + 1);
     }
     function SubValue() {
-        setValue(value - 1);
+        if (value - 1 >= BOTTOM_THRESHOLD)
+            setValue(value - 1);
     }
 
     return (
@@ -34,12 +40,8 @@ export default function DimensionsInput({ title }: IDimensionIput) {
             </Text>
             <TextInput onChangeText={(e) => ChangeInputValue(e)} keyboardType="numeric" style={styles.value}>{value}</TextInput>
             <View style={styles.row}>
-                <TouchableOpacity onPress={() => SubValue()} style={styles.roundButton}>
-                    <Entypo style={styles.icon} name="minus" size={36} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => AddValue()} style={styles.roundButton}>
-                    <AntDesign style={styles.icon} name="plus" size={36} />
-                </TouchableOpacity>
+                <RoundButton SubValue={SubValue} name="minus" size={36} />
+                <RoundButton SubValue={AddValue} name="plus" size={36} />
             </View>
         </View>
     )
@@ -55,19 +57,6 @@ const styles = StyleSheet.create({
     container: {
         height: 160
     },
-    icon: {
-        color: secondaryColor,
-        fontWeight: 'bold'
-    },
-    roundButton: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        borderColor: '#00000015',
-        borderWidth: 2,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
     title: {
         marginTop: '5%',
         textAlign: 'center',
@@ -80,7 +69,7 @@ const styles = StyleSheet.create({
     },
     value: {
         textAlign: 'center',
-        fontSize: 55,
+        fontSize: 52,
         color: greyColor
     },
 })

@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import { StyleSheet, Text, View, Switch } from 'react-native'
 import { primaryColor, secondaryColor, greyColor, lightGreyColor, lightPrimaryColor, terciaryPrimaryColor } from '../utils/Colors'
 
-export default function CoeficientToggles({ title }) {
-    const [isEnabled, setIsEnabled] = useState(false)
-    const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+export default function CoeficientToggles({ title, item, toggleChange }) {
+
+    const [state, setState] = useState(item.state);
 
     return (
         <View style={styles.container}>
@@ -12,10 +12,14 @@ export default function CoeficientToggles({ title }) {
             <Switch
                 style={styles.toggle}
                 trackColor={{ false: lightGreyColor, true: secondaryColor }}
-                thumbColor={isEnabled ? lightPrimaryColor : lightPrimaryColor}
-                onValueChange={toggleSwitch}
-                value={isEnabled}
+                thumbColor={state ? lightPrimaryColor : lightPrimaryColor}
+                onValueChange={() => {
+                    toggleChange(item.id)
+                    setState(!state)
+                }}
+                value={state}
                 ios_backgroundColor={lightGreyColor} />
+            {console.log("item state is " + state)}
         </View>
     )
 }
