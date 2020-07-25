@@ -23,7 +23,7 @@ const DEFAULT_ACTIONS = [
         id: 1,
         title: 'Gravação',
         state: false,
-        coef: 0.018
+        coef: 0.020
     },
     {
         id: 2,
@@ -55,9 +55,14 @@ export default function Calculator() {
     const [quant, setQuant]: any = qnt
     const [toggleState, setToggleState] = useState(DEFAULT_ACTIONS)
     const { larg } = useContext(Context)
-    // const [largura, setLargura] = larg
+    const [largura, setLargura]: any = larg
     const { alt } = useContext(Context)
-    // const [altura, setAltura] = alt
+    const [altura, setAltura]: any = alt
+
+
+    useEffect(() => {
+        setResult(CalculateResult)
+    }, [qnt])
 
     function AddValue() {
         if (quant + 1 <= TOP_THRESHOLD)
@@ -69,9 +74,19 @@ export default function Calculator() {
             setQuant(quant - 1);
     }
 
-    function CalculateResult() {
+    const CalculateResult: number = () => {
 
+        const coef = toggleState.filter(f => f.state == true)
+        let val = 0
+        coef.forEach(x => {
+            if (x.coef > val)
+                val = x.coef
+        })
+        let result = altura * largura * val * quant
+        console.log(result)
+        return result.toFixed(2)
     }
+
     const ToggleChange = (id: number) => {
         const newArray = toggleState
         newArray.map(a => {
@@ -124,7 +139,7 @@ export default function Calculator() {
                 </Card>
             </View>
             <View style={[styles.result]}>
-                <Text style={styles.resultText}>R$ {200.50}</Text>
+                <Text style={styles.resultText}>R$ {result}</Text>
             </View>
         </View>
 
