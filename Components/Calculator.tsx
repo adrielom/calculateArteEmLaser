@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput } from 'react-native'
 import { Entypo } from '@expo/vector-icons';
 
 import { StatusBar } from 'expo-status-bar';
@@ -21,27 +21,31 @@ export interface IToggle {
 const DEFAULT_ACTIONS = [
     {
         id: 1,
-        title: 'Gravação',
-        state: false,
-        coef: 0.020
+        title: 'Corte',
+        state: true,
+        coef: 0.018,
+        isCoef: true
     },
     {
         id: 2,
-        title: 'Corte',
+        title: 'Gravação',
         state: false,
-        coef: 0.018
+        coef: 2,
+        isCoef: false
     },
     {
         id: 3,
         title: 'Vazado',
         state: false,
-        coef: 0.018
+        coef: 0.023,
+        isCoef: true
     },
     {
         id: 4,
         title: 'Rebaixado',
         state: false,
-        coef: 0.018
+        coef: 0.028,
+        isCoef: true
     },
 ]
 
@@ -50,7 +54,24 @@ const BOTTOM_THRESHOLD = 0
 
 export default function Calculator() {
 
-    const [result, setResult] = useState(0)
+    const CalculateResult = () => {
+
+        const coef = toggleState.filter(f => f.isCoef == true && f.state == true)
+        const notCoef = toggleState.filter(f => f.isCoef == false && f.state == true)
+        let val = 0
+        coef.forEach(x => {
+            if (x.coef > val)
+                val = x.coef
+        })
+        let acc = 0
+        notCoef.forEach(x => {
+            acc += x.coef
+        })
+
+        let result = altura * largura * val * quant + acc
+        return result
+    }
+
     const { qnt } = useContext(Context)
     const [quant, setQuant]: any = qnt
     const [toggleState, setToggleState] = useState(DEFAULT_ACTIONS)
@@ -58,11 +79,12 @@ export default function Calculator() {
     const [largura, setLargura]: any = larg
     const { alt } = useContext(Context)
     const [altura, setAltura]: any = alt
+    const [result, setResult] = useState(CalculateResult)
 
 
     useEffect(() => {
         setResult(CalculateResult)
-    }, [qnt])
+    }, [quant, largura, altura, toggleState])
 
     function AddValue() {
         if (quant + 1 <= TOP_THRESHOLD)
@@ -74,29 +96,25 @@ export default function Calculator() {
             setQuant(quant - 1);
     }
 
-    const CalculateResult: number = () => {
-
-        const coef = toggleState.filter(f => f.state == true)
-        let val = 0
-        coef.forEach(x => {
-            if (x.coef > val)
-                val = x.coef
-        })
-        let result = altura * largura * val * quant
-        console.log(result)
-        return result.toFixed(2)
-    }
-
     const ToggleChange = (id: number) => {
         const newArray = toggleState
         newArray.map(a => {
             if (a.id === id) {
 
                 a.state = !a.state
-                console.log(id + " " + a.state)
             }
         })
         setToggleState(newArray)
+        setResult(CalculateResult)
+    }
+
+    function ChangeInputValue(val: string) {
+        let numVal = parseFloat(val)
+        console.log(numVal)
+        if (val === '' || numVal < 0 || isNaN(numVal))
+            setQuant(0);
+        else if (numVal > 0)
+            setQuant(numVal);
     }
 
 
@@ -104,11 +122,11 @@ export default function Calculator() {
     return (
         <View style={styles.container}>
             <StatusBar />
-            <View style={styles.relativeRow}>
+            {/* <View style={styles.relativeRow}>
                 <TouchableOpacity style={styles.threeDotsButton}>
                     <Entypo name="dots-three-vertical" size={threeDotsHeight} color={greyColor} />
                 </TouchableOpacity>
-            </View>
+            </View> */}
             <View style={[styles.row, { marginTop: '15%' }]}>
                 <Card height='100%' width='50%'>
                     <DimensionsInput val={larg} title="Largura" />
@@ -119,8 +137,9 @@ export default function Calculator() {
             </View>
             <View style={[styles.row, { height: '30%', marginTop: '5%' }]}>
                 <Card height='100%' width='100%'>
+                    <Text style={styles.quantityText}>Serviço</Text>
                     <FlatList
-                        style={{ paddingVertical: '2%', }}
+                        style={{ paddingVertical: '2%', marginBottom: '3%' }}
                         data={toggleState}
                         renderItem={({ item }) => <CoeficientToggles item={item} title={item.title} toggleChange={ToggleChange} />}
                         keyExtractor={action => action.title}
@@ -133,13 +152,13 @@ export default function Calculator() {
                     <View style={[styles.cardContent]}>
                         <RoundButton SubValue={SubValue} name="minus" size={36} />
 
-                        <Text style={styles.quantityTextValue}>  {quant}</Text>
+                        <TextInput onChangeText={e => ChangeInputValue(e)} keyboardType="numeric" style={styles.quantityTextValue}>  {quant}</TextInput>
                         <RoundButton SubValue={AddValue} name="plus" size={36} />
                     </View>
                 </Card>
             </View>
             <View style={[styles.result]}>
-                <Text style={styles.resultText}>R$ {result}</Text>
+                <Text style={styles.resultText}>R$ {result.toFixed(2)}</Text>
             </View>
         </View>
 

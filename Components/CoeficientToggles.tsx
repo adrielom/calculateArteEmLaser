@@ -19,7 +19,6 @@ export default function CoeficientToggles({ title, item, toggleChange }) {
                 }}
                 value={state}
                 ios_backgroundColor={lightGreyColor} />
-            {console.log("item state is " + state)}
         </View>
     )
 }
