@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Dimensions } from 'react-native'
 import { Entypo } from '@expo/vector-icons';
 
 import { StatusBar } from 'expo-status-bar';
@@ -9,8 +9,13 @@ import CoeficientToggles from './CoeficientToggles';
 import { secondaryColor, greyColor, lightPrimaryColor, lightGreyColor } from '../utils/Colors';
 import RoundButton from './RoundButton';
 import { Context } from './Context';
+import { AddValue, SubValue } from '../services/generalMethods'
 
 const threeDotsHeight = 24
+
+const height = Dimensions.get('screen').height
+
+
 
 export interface IToggle {
     title: string,
@@ -86,15 +91,7 @@ export default function Calculator() {
         setResult(CalculateResult)
     }, [quant, largura, altura, toggleState])
 
-    function AddValue() {
-        if (quant + 1 <= TOP_THRESHOLD)
-            setQuant(quant + 1);
-    }
 
-    function SubValue() {
-        if (quant - 1 >= BOTTOM_THRESHOLD)
-            setQuant(quant - 1);
-    }
 
     const ToggleChange = (id: number) => {
         const newArray = toggleState
@@ -127,7 +124,7 @@ export default function Calculator() {
                     <Entypo name="dots-three-vertical" size={threeDotsHeight} color={greyColor} />
                 </TouchableOpacity>
             </View> */}
-            <View style={[styles.row, { marginTop: '15%' }]}>
+            <View style={[styles.row]}>
                 <Card height='100%' width='50%'>
                     <DimensionsInput val={larg} title="Largura" />
                 </Card>
@@ -135,7 +132,7 @@ export default function Calculator() {
                     <DimensionsInput val={alt} title="Altura" />
                 </Card>
             </View>
-            <View style={[styles.row, { height: '30%', marginTop: '5%' }]}>
+            <View style={[styles.row, { height: height > 780 ? '30%' : '20%', marginTop: '5%' }]}>
                 <Card height='100%' width='100%'>
                     <Text style={styles.quantityText}>Serviço</Text>
                     <FlatList
@@ -150,10 +147,10 @@ export default function Calculator() {
                 <Card height='100%' width='100%'>
                     <Text style={styles.quantityText}>Quantidade</Text>
                     <View style={[styles.cardContent]}>
-                        <RoundButton SubValue={SubValue} name="minus" size={36} />
+                        <RoundButton SubValue={() => SubValue(quant, setQuant, BOTTOM_THRESHOLD)} name="minus" size={36} />
 
                         <TextInput onChangeText={e => ChangeInputValue(e)} keyboardType="numeric" style={styles.quantityTextValue}>  {quant}</TextInput>
-                        <RoundButton SubValue={AddValue} name="plus" size={36} />
+                        <RoundButton SubValue={() => AddValue(quant, setQuant, TOP_THRESHOLD)} name="plus" size={36} />
                     </View>
                 </Card>
             </View>

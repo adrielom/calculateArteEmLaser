@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "arte-em-laser-calculateValue",
+    "name": "Calculadora - Arte em Laser",
     "slug": "arte-em-laser-calculateValue",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/LOGOAL2020.png",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/LOGOAL2020.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#d9f5fb"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -20,7 +20,12 @@
       "supportsTablet": true
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/LOGOAI2020.png"
+    },
+    "description": "",
+    "githubUrl": "https://github.com/adrielom/calculateArteEmLaser",
+    "android": {
+      "package": "com.adrielom.calculadoraArteEmLaser"
     }
   }
 }
