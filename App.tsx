@@ -2,13 +2,15 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Calculator from './Components/Calculator';
 import { Provider } from './Components/Context';
+import Delivery from './Components/Delivery';
 
 export default function App() {
   return (
     <Provider>
       <View style={styles.container}>
         {/* {console.log('app')} */}
-        <Calculator />
+        {/* <Calculator /> */}
+        <Delivery />
       </View>
     </Provider>
   );
