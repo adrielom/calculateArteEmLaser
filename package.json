@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.1.0",
+    "axios": "^0.20.0",
     "expo": "^38.0.9",
     "expo-font": "~8.2.1",
     "expo-status-bar": "^1.0.2",
