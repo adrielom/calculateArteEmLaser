@@ -7,7 +7,7 @@ import { secondaryColor, greyColor, lightPrimaryColor, lightGreyColor, darkPrima
 import axios from 'axios'
 
 const ADDRESS1 = 'Av. A 902, Conjunto Ceará, Fortaleza - CE'
-const ADDRESS2 = 'Shopping Iguatemi 85 Fortaleza'
+const ADDRESS2 = 'Rua Exemplo, 85, Fortaleza - CE, 6045348-23'
 const URL = 'https://arte-em-laser-delivery.herokuapp.com/'
 
 export interface IResponse {
@@ -23,22 +23,59 @@ export default function Delivery() {
     const [address1, setAddress1] = useState(ADDRESS1)
     const [address2, setAddress2] = useState(ADDRESS2)
     const [delivery, setDelivery] = useState(Object)
+    const [error, setError] = useState('')
     const [calculate, setCalculate] = useState(false)
     const [loading, setLoading] = useState(false)
 
+
+    function setDefaultValues() {
+        setDelivery({})
+        setError('')
+    }
+
     const CalculateDelivery = async (add1: string, add2: string) => {
+        setDefaultValues()
+
         if (calculate == false) setCalculate(true)
         setLoading(true)
-        const res = await axios.get(URL, {
+        await axios.get(URL, {
             params: {
                 address1: add1,
                 address2: add2
             }
         })
+            .then((res) => {
+                console.log(address2)
+                if (res.data.err != null) {
+                    console.log("response 1 " + res.data.msg)
+                    setError(res.data.msg)
+                }
+                if (res.data.value) {
+                    console.log("response 2 " + JSON.stringify(res.data))
+                    setDelivery(res.data)
+
+                }
+            })
+            .catch(function (error) {
+                if (error.response) {
+                    // Request made and server responded
+                    // console.log(error.response.data);
+                    setError('Tivemos um problema na conexão... Cheque se está tudo bem com sua conexão com a internet')
+                    console.log(error.response.status);
+                    // console.log(error.response.headers);
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    setError('Infelizmente, tivemos um problema no servidor. Tente novamente mais tarde.')
+                    console.log(error.request);
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    console.log('Error', error.message);
+                    setError(error.message)
+                }
+
+            })
         setLoading(false)
 
-        setDelivery(res.data)
-        console.log(res)
     }
 
     const CalculateComponent = () => {
@@ -59,37 +96,57 @@ export default function Delivery() {
             </>)
         }
         if (calculate) {
-            return (
-                <>
-                    <TouchableOpacity onPress={() => CalculateDelivery(address1, address2)} style={{ width: '100%', alignItems: 'center', alignContent: 'center' }} >
-                        <Text style={{ fontSize: 35, color: 'white', fontWeight: 'bold' }}>Calcular</Text>
-                    </TouchableOpacity>
-                    <View style={[styles.lineBellow, { borderBottomColor: 'white', width: '85%', marginTop: '2%' }]} />
-                    <View style={{ flexDirection: 'row', justifyContent: 'center', width: '90%', alignItems: 'flex-end' }}>
-                        <Text style={{ fontSize: 35, color: 'white' }}>
-                            R$
-                        <Text style={styles.resultMoneyText} > {delivery.value}</Text>
-                        </Text>
-                        <MaterialIcons name="payment" size={25} color="white" style={{ paddingBottom: 10, marginLeft: '5%' }} />
-                    </View>
-                    <View style={{ flexDirection: 'row', width: '90%', justifyContent: 'space-evenly', marginBottom: '5%' }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', }}>
-                            <Text style={styles.secondaryInfoText}>
-                                {delivery.distance}
-                                <Text style={{ fontSize: 15 }}> km</Text>
+            if (error !== '') {
+                return (
+                    <>
+                        <TouchableOpacity onPress={() => CalculateDelivery(address1, address2)} style={{ width: '100%', alignItems: 'center', alignContent: 'center' }} >
+                            <Text style={{ fontSize: 35, color: 'white', fontWeight: 'bold' }}>Calcular</Text>
+                        </TouchableOpacity>
+                        <View style={[styles.lineBellow, { borderBottomColor: 'white', width: '85%', marginTop: '2%' }]} />
+                        <View style={{ flexDirection: 'row' }}>
+                            <Text style={styles.errorMessage}>
+                                <FontAwesome5
+                                    name="sad-cry" size={14}
+                                    color="white" />
+                                {`  ${error}`}
                             </Text>
-                            <FontAwesome5 name="map-marker-alt" size={16} color="white" style={{ marginLeft: '5%' }} />
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', }}>
-                            <Text style={styles.secondaryInfoText}>
-                                {delivery.time}
-                                <Text style={{ fontSize: 15 }}> min</Text>
+                    </>
+                )
+            }
+            else {
+                return (
+                    <>
+                        <TouchableOpacity onPress={() => CalculateDelivery(address1, address2)} style={{ width: '100%', alignItems: 'center', alignContent: 'center' }} >
+                            <Text style={{ fontSize: 35, color: 'white', fontWeight: 'bold' }}>Calcular</Text>
+                        </TouchableOpacity>
+                        <View style={[styles.lineBellow, { borderBottomColor: 'white', width: '85%', marginTop: '2%' }]} />
+                        <View style={{ flexDirection: 'row', justifyContent: 'center', width: '90%', alignItems: 'flex-end' }}>
+                            <Text style={{ fontSize: 35, color: 'white' }}>
+                                R$
+                            <Text style={styles.resultMoneyText} > {delivery.value}</Text>
                             </Text>
-                            <MaterialIcons name="timer" size={25} color="white" style={{ marginLeft: '5%' }} />
+                            <MaterialIcons name="payment" size={25} color="white" style={{ paddingBottom: 10, marginLeft: '5%' }} />
                         </View>
-                    </View>
-                </>
-            )
+                        <View style={{ flexDirection: 'row', width: '90%', justifyContent: 'space-evenly', marginBottom: '5%' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+                                <Text style={styles.secondaryInfoText}>
+                                    {delivery.distance}
+                                    <Text style={{ fontSize: 15 }}> km</Text>
+                                </Text>
+                                <FontAwesome5 name="map-marker-alt" size={16} color="white" style={{ marginLeft: '5%' }} />
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+                                <Text style={styles.secondaryInfoText}>
+                                    {delivery.time}
+                                    <Text style={{ fontSize: 15 }}> min</Text>
+                                </Text>
+                                <MaterialIcons name="timer" size={25} color="white" style={{ marginLeft: '5%' }} />
+                            </View>
+                        </View>
+                    </>
+                )
+            }
         }
     }
 
@@ -174,6 +231,14 @@ const styles = StyleSheet.create({
         right: 20,
         justifyContent: 'flex-end',
         color: lighterGreyColor
+    },
+    errorMessage: {
+        fontSize: 16,
+        margin: '5%',
+        alignContent: 'center',
+        fontFamily: 'Roboto',
+        fontWeight: 'bold',
+        color: 'white'
     },
     resultMoneyText: {
         fontSize: 60,
