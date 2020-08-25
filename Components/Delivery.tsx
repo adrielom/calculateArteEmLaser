@@ -91,9 +91,10 @@ export default function Delivery() {
         }
         if (calculate && loading) {
             console.log('hey ' + calculate + ' ' + loading)
-            return (<>
-                <ActivityIndicator size='large' color="white" />
-            </>)
+            return (
+                <>
+                    <ActivityIndicator size='large' color="white" />
+                </>)
         }
         if (calculate) {
             if (error !== '') {
@@ -103,7 +104,7 @@ export default function Delivery() {
                             <Text style={{ fontSize: 35, color: 'white', fontWeight: 'bold' }}>Calcular</Text>
                         </TouchableOpacity>
                         <View style={[styles.lineBellow, { borderBottomColor: 'white', width: '85%', marginTop: '2%' }]} />
-                        <View style={{ flexDirection: 'row' }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                             <Text style={styles.errorMessage}>
                                 <FontAwesome5
                                     name="sad-cry" size={14}
