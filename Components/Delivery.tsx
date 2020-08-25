@@ -1,10 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Dimensions, ActivityIndicator } from 'react-native'
-import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { MaterialIcons, FontAwesome5, FontAwesome } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import Card from './Card';
-import { secondaryColor, greyColor, lightPrimaryColor, lightGreyColor, darkPrimaryColor, lighterGreyColor } from '../utils/Colors';
+import { secondaryColor, greyColor, lightPrimaryColor, lightGreyColor, darkPrimaryColor, lighterGreyColor, terciaryPrimaryColor } from '../utils/Colors';
 import axios from 'axios'
+import DeliveryHistoryItem from './DeliveryHistoryItem';
 
 const ADDRESS1 = 'Av. A 902, Conjunto Ceará, Fortaleza - CE'
 const ADDRESS2 = 'Rua Exemplo, 85, Fortaleza - CE, 6045348-23'
@@ -60,7 +61,7 @@ export default function Delivery() {
                 if (error.response) {
                     // Request made and server responded
                     // console.log(error.response.data);
-                    setError('Tivemos um problema na conexão... Cheque se está tudo bem com sua conexão com a internet')
+                    setError('Tivemos um problema na conexão... Cheque o endereço ou se está tudo bem com sua conexão com a internet')
                     console.log(error.response.status);
                     // console.log(error.response.headers);
                 } else if (error.request) {
@@ -157,7 +158,7 @@ export default function Delivery() {
             <View style={[styles.row]}>
                 <Card height='100%' width='50%'>
                     <View style={styles.addressTitleContainer}>
-                        <FontAwesome5 name="route" color={secondaryColor} size={20} style={{ marginLeft: '5%' }} />
+                        <FontAwesome5 name="map-marker-alt" color={secondaryColor} size={20} style={{ marginLeft: '5%' }} />
                         <Text style={styles.addressTitle}>Ponto de Partida: </Text>
                     </View>
                     <View style={styles.lineBellow} />
@@ -168,7 +169,7 @@ export default function Delivery() {
             <View style={[styles.row, { marginTop: '4%' }]}>
                 <Card height='100%' width='50%'>
                     <View style={styles.addressTitleContainer}>
-                        <FontAwesome5 name="motorcycle" color={secondaryColor} size={20} style={{ marginLeft: '5%' }} />
+                        <FontAwesome name="flag" color={secondaryColor} size={20} style={{ marginLeft: '5%' }} />
                         <Text style={styles.addressTitle}>Ponto de Entrega: </Text>
                     </View>
                     <View style={styles.lineBellow}
@@ -176,13 +177,13 @@ export default function Delivery() {
                     <TextInput placeholder={ADDRESS2} onChangeText={(e) => setAddress2(e)} style={[styles.addressPlaceholder]} placeholderTextColor={lightGreyColor} />
                 </Card>
             </View>
-            {/* 
-            //! This is a history of deliveries
+
             <View style={styles.row}>
-                <Card height='100%' width='50%'>
-                    <FlatList></FlatList>
+                <Card height='100%' width='50%' color={darkPrimaryColor}>
+                    <Text style={styles.sectionTitleText}> Histórico de Entregas </Text>
+                    <DeliveryHistoryItem />
                 </Card>
-            </View> */}
+            </View>
             <View style={[styles.result]}>
                 {
                     CalculateComponent()
@@ -211,6 +212,13 @@ const styles = StyleSheet.create({
         marginTop: '10%',
         height: 'auto',
         marginHorizontal: '5%'
+    },
+    sectionTitleText: {
+        marginTop: '2%',
+        textAlign: 'center',
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: 'white'
     },
     result: {
         width: '100%',

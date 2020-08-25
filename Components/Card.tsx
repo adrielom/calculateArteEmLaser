@@ -5,16 +5,26 @@ export interface ICard {
     height: string,
     width: string,
     title?: string,
+    color?: string,
     children?: {}
 }
 
 
-export default function Card({ height, width, title, children }: ICard) {
-    return (
-        <View style={[styles.shadow, cardStyle(height, width).card]}>
-            {children}
-        </View>
-    )
+export default function Card({ height, width, title, children, color }: ICard) {
+
+    if (color != null) {
+        return (
+            <View style={[styles.shadow, cardStyle(height, width).card, { backgroundColor: color }]}>
+                {children}
+            </View>
+        )
+    }
+    else
+        return (
+            <View style={[styles.shadow, cardStyle(height, width).card]}>
+                {children}
+            </View>
+        )
 }
 
 const styles = StyleSheet.create({
