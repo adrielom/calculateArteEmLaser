@@ -1,11 +1,13 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Dimensions, ActivityIndicator } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Dimensions, ActivityIndicator, AsyncStorage, Keyboard } from 'react-native'
 import { MaterialIcons, FontAwesome5, FontAwesome } from '@expo/vector-icons';
+import uuid from 'react-native-uuid';
 import { StatusBar } from 'expo-status-bar';
 import Card from './Card';
-import { secondaryColor, greyColor, lightPrimaryColor, lightGreyColor, darkPrimaryColor, lighterGreyColor, terciaryPrimaryColor } from '../utils/Colors';
+import { secondaryColor, greyColor, lightPrimaryColor, lightGreyColor, darkPrimaryColor, lighterGreyColor, lighterPrimaryColor, terciaryPrimaryColorLighter } from '../utils/Colors';
 import axios from 'axios'
-import DeliveryHistoryItem from './DeliveryHistoryItem';
+import DeliveryHistoryItem, { IDeliveryItem } from './DeliveryHistoryItem';
+import { Context } from './Context';
 
 const ADDRESS1 = 'Av. A 902, Conjunto Ceará, Fortaleza - CE'
 const ADDRESS2 = 'Rua Exemplo, 85, Fortaleza - CE, 6045348-23'
@@ -16,10 +18,25 @@ export interface IResponse {
     distance: string,
     time: string,
     error: Object,
-    msg: string
+    msg: string,
 }
 
 export default function Delivery() {
+    let dates = Array()
+
+    const getTopElement = () => {
+        let dates: any = history
+        dates.sort(function (a, b) { return a - b });
+        return dates[0].id
+    }
+
+    const saveHistory = async (historyReturn: string) => {
+        try {
+            await AsyncStorage.setItem('history', historyReturn);
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
 
     const [address1, setAddress1] = useState(ADDRESS1)
     const [address2, setAddress2] = useState(ADDRESS2)
@@ -27,7 +44,32 @@ export default function Delivery() {
     const [error, setError] = useState('')
     const [calculate, setCalculate] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [history, setHistory] = useState([] as any)
+    const { topElemId } = useContext(Context)
+    const [topElementId, setTopElementId]: any = topElemId;
 
+
+    useEffect(() => {
+        const asyncFetch = async () => {
+            const hist = await AsyncStorage.getItem("history");
+            if (hist) {
+                // setter from useState
+                let histJSON = getSortedArrayByDate(JSON.parse(hist))
+
+                setHistory(histJSON);
+            }
+        };
+        // AsyncStorage.clear()
+        asyncFetch();
+    }, []);
+
+    useEffect(() => {
+        if (Array.isArray(history) && history.length)
+            setTopElementId(getTopElement())
+
+        // AsyncStorage.clear()
+        saveHistory(JSON.stringify(history))
+    }, [history])
 
     function setDefaultValues() {
         setDelivery({})
@@ -46,31 +88,43 @@ export default function Delivery() {
             }
         })
             .then((res) => {
-                console.log(address2)
                 if (res.data.err != null) {
-                    console.log("response 1 " + res.data.msg)
                     setError(res.data.msg)
                 }
                 if (res.data.value) {
-                    console.log("response 2 " + JSON.stringify(res.data))
+
+                    let hist = res.data
                     setDelivery(res.data)
+
+                    hist.distance = hist.distance.split(' Km')[0]
+                    hist.value = hist.value.split('R$ ')[1]
+                    hist.time = parseInt(hist.time.split(':')[0]) > 0 ? hist.time : hist.time.split(':')[1] + ':' + hist.time.split(':')[2]
+                    hist.address1 = add1
+                    hist.address2 = add2
+                    hist.id = uuid.v4()
+                    hist.date = new Date()
+
+                    let newHistory = [...history, hist]
+
+
+                    newHistory = getSortedArrayByDate(newHistory)
+                    if (newHistory.length > 50) {
+                        newHistory.pop()
+                    }
+
+                    setHistory(newHistory)
 
                 }
             })
             .catch(function (error) {
                 if (error.response) {
                     // Request made and server responded
-                    // console.log(error.response.data);
-                    setError('Tivemos um problema na conexão... Cheque o endereço ou se está tudo bem com sua conexão com a internet')
-                    console.log(error.response.status);
-                    // console.log(error.response.headers);
+                    setError('Tivemos um problema na busca... \nCheque os endereços ou a sua conexão com a internet')
                 } else if (error.request) {
                     // The request was made but no response was received
                     setError('Infelizmente, tivemos um problema no servidor. Tente novamente mais tarde.')
-                    console.log(error.request);
                 } else {
                     // Something happened in setting up the request that triggered an Error
-                    console.log('Error', error.message);
                     setError(error.message)
                 }
 
@@ -79,19 +133,54 @@ export default function Delivery() {
 
     }
 
+    const getSortedArrayByDate = (history) => {
+        let items = history.sort(function (a, b) {
+            return Date.parse(a.date) < Date.parse(b.date);
+        });
+
+        return items
+
+    }
+
+    const FlatListComponent = () => {
+        if (Array.isArray(history) && history.length) {
+            return (
+                <View style={[styles.row, {
+                    marginTop: '4%', minHeight: 50, height: '38%', justifyContent: 'center', position: 'relative', zIndex: 0
+                }]}>
+
+                    <Card height='100%' width='50%' color={terciaryPrimaryColorLighter} radius={14}>
+                        <Text style={[styles.title, { marginVertical: 10, flex: 0.1 }]}>Histórico de Pedidos</Text>
+                        <View style={{ flex: 1 }}>
+                            <FlatList
+                                style={{ flex: 1, marginVertical: 10 }}
+                                data={history.sort((a, b) => {
+                                    return b.date - a.date
+                                })}
+                                renderItem={({ item }: { item: IDeliveryItem }) => <DeliveryHistoryItem address1={item.address1} address2={item.address2} id={item.id} distance={item.distance} time={item.time} value={item.value} date={item.date} />}
+                                keyExtractor={item => item.id.toString()}
+                            />
+                        </View>
+                    </Card>
+                </View>
+            )
+        }
+    };
+
     const CalculateComponent = () => {
-        console.log(`loading is ${loading}`)
         if (loading === false && calculate === false) {
             return (
                 <>
-                    <TouchableOpacity onPress={() => CalculateDelivery(address1, address2)} style={{ width: '100%', alignItems: 'center', alignContent: 'center' }} >
+                    <TouchableOpacity onPress={() => {
+                        Keyboard.dismiss()
+                        CalculateDelivery(address1, address2)
+                    }} style={{ width: '100%', alignItems: 'center', alignContent: 'center' }} >
                         <Text style={{ fontSize: 35, color: 'white', fontWeight: 'bold' }}>Calcular</Text>
                     </TouchableOpacity>
                 </>
             )
         }
         if (calculate && loading) {
-            console.log('hey ' + calculate + ' ' + loading)
             return (
                 <>
                     <ActivityIndicator size='large' color="white" />
@@ -177,22 +266,20 @@ export default function Delivery() {
                     <TextInput placeholder={ADDRESS2} onChangeText={(e) => setAddress2(e)} style={[styles.addressPlaceholder]} placeholderTextColor={lightGreyColor} />
                 </Card>
             </View>
+            {
 
-            <View style={styles.row}>
-                <Card height='100%' width='50%' color={darkPrimaryColor}>
-                    <Text style={styles.sectionTitleText}> Histórico de Entregas </Text>
-                    <DeliveryHistoryItem />
-                </Card>
-            </View>
+                FlatListComponent()
+            }
             <View style={[styles.result]}>
                 {
                     CalculateComponent()
                 }
             </View>
-        </View>
+        </View >
 
     )
 }
+
 
 const styles = StyleSheet.create({
     container: {
@@ -213,18 +300,19 @@ const styles = StyleSheet.create({
         height: 'auto',
         marginHorizontal: '5%'
     },
-    sectionTitleText: {
-        marginTop: '2%',
-        textAlign: 'center',
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: 'white'
+    title: {
+        fontSize: 20,
+        alignContent: 'center',
+        fontFamily: 'Roboto',
+        color: greyColor,
+        textAlign: 'center'
     },
     result: {
         width: '100%',
         position: 'absolute',
         bottom: 0,
         minHeight: 100,
+        zIndex: 2,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: secondaryColor,

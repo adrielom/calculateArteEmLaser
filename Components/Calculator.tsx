@@ -107,7 +107,6 @@ export default function Calculator() {
 
     function ChangeInputValue(val: string) {
         let numVal = parseFloat(val)
-        console.log(numVal)
         if (val === '' || numVal < 0 || isNaN(numVal))
             setQuant(0);
         else if (numVal > 0)

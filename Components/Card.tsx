@@ -6,15 +6,16 @@ export interface ICard {
     width: string,
     title?: string,
     color?: string,
+    radius?: number
     children?: {}
 }
 
 
-export default function Card({ height, width, title, children, color }: ICard) {
+export default function Card({ height, width, title, children, color, radius }: ICard) {
 
     if (color != null) {
         return (
-            <View style={[styles.shadow, cardStyle(height, width).card, { backgroundColor: color }]}>
+            <View style={[styles.shadow, cardStyle(height, width).card, { backgroundColor: color, borderRadius: radius }]}>
                 {children}
             </View>
         )
